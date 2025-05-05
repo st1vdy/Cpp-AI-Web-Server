@@ -1,3 +1,0 @@
-/home/dongye/cpp_projects/clion-server/dchat/build/CMakeFiles/server.dir
-/home/dongye/cpp_projects/clion-server/dchat/build/CMakeFiles/edit_cache.dir
-/home/dongye/cpp_projects/clion-server/dchat/build/CMakeFiles/rebuild_cache.dir
