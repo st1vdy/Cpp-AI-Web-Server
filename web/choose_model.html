@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模型选择</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+<div class="w-full max-w-4xl">
+    <header class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">模型选择</h1>
+    </header>
+    <div id="model-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+</div>
+
+<script>
+    /**
+     * 模型数据列表。
+     * 如需新增模型，只需在此数组中添加一个对象：
+     * { name: '模型X', description: '该模型的功能介绍...' }
+     */
+    const models = [
+        { name: 'DeepSeek-R1-Distill-Qwen-14B', description: '高性能大语言模型，擅长复杂的任务，如数学推理、代码生成, 可处理复杂任务，如长文本生成、数据分析等' },
+        { name: 'Scenimefy', description: 'Scenimefy是一种半监督图像到图像翻译框架，将真实场景高质量地渲染成保留语义且细节丰富的动漫风格图像' },
+        { name: 'TODO', description: '...' }
+        // 在此添加更多模型对象
+    ];
+
+    const modelList = document.getElementById('model-list');
+
+    function renderModels() {
+        modelList.innerHTML = models.map(model => (
+            `<div class="cursor-pointer transform hover:scale-105 transition bg-white rounded-2xl shadow p-6"
+             onclick="enterModel('${model.name}')">
+           <h2 class="text-xl font-medium mb-2">${model.name}</h2>
+           <p class="text-sm text-gray-600">${model.description}</p>
+         </div>`
+        )).join('');
+    }
+
+    /**
+     * 设置 Cookie 并跳转到目标 URL 的通用函数
+     * @param {string} key    Cookie 名称
+     * @param {string} value  Cookie 值
+     * @param {string} path   Cookie 路径
+     * @param {string} url    跳转目标 URL
+     */
+    function setCookieAndRedirect(key, value, path, url) {
+        const expires = new Date();
+        // 设置 cookie 一小时后过期
+        expires.setTime(expires.getTime() + 60 * 60 * 1000);
+        document.cookie = `${key}=${value};expires=${expires.toUTCString()};path=${path}`;
+        window.location.href = url;
+    }
+
+    /**
+     * 进入模型页面的跳转逻辑
+     * 使用封装的 setCookieAndRedirect 函数，携带模型名称到下一个页面
+     */
+    function enterModel(name) {
+        let url = '';
+        if (name === 'DeepSeek-R1-Distill-Qwen-14B') {
+            url = '/llm.html';
+        } else if (name === 'Scenimefy') {
+            url = '/scenimefy.html';
+        } else {
+            console.warn('未定义模型跳转:', name);
+            return;
+        }
+        // 设置 cookie: key 为 selectedModel，value 为模型名，path 为 /models，然后跳转
+        setCookieAndRedirect('auth_token', localStorage.getItem('auth_token'), '/', url);
+    }
+
+    // 页面初始化渲染模型列表
+    renderModels();
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>注册 / 登录</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body, html { height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; background: #f0f2f5; }
+        .auth-container { width: 320px; padding: 24px; background: #fff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .auth-container h2 { text-align: center; margin-bottom: 24px; color: #333; }
+        .auth-container label { display: block; margin-bottom: 8px; color: #555; }
+        .auth-container input { width: 100%; padding: 10px; margin-bottom: 16px; border: 1px solid #ccc; border-radius: 6px; }
+        .auth-container button { width: 100%; padding: 10px; background: #4a90e2; color: #fff; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; position: relative; }
+        .auth-container button[disabled] { opacity: 0.6; cursor: not-allowed; }
+        .toggle { text-align: center; margin-top: 12px; color: #4a90e2; cursor: pointer; }
+        .error { color: red; text-align: center; margin-bottom: 12px; display: none; }
+        .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 0.9rem; color: #4a90e2; }
+    </style>
+</head>
+<body>
+<div class="auth-container" id="auth">
+    <h2 id="form-title">登录</h2>
+    <div class="error" id="errorMsg"></div>
+    <label for="email">邮箱</label>
+    <input type="email" id="email" placeholder="输入邮箱" autocomplete="username" />
+    <label for="password">密码</label>
+    <div style="position: relative;">
+        <input type="password" id="password" placeholder="输入密码" autocomplete="current-password" />
+        <span id="togglePassword" class="password-toggle">显示</span>
+    </div>
+    <button id="submitBtn">提交</button>
+    <div class="toggle" id="toggleLink">没有账号？注册</div>
+</div>
+
+<script>
+    (function() {
+        const titleEl = document.getElementById('form-title');
+        const toggleEl = document.getElementById('toggleLink');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('togglePassword');
+
+        let isLogin = true;
+        const TIMEOUT_MS = 10000;
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+        function clearError() {
+            errorMsg.style.display = 'none';
+            errorMsg.textContent = '';
+        }
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        function setLoading(loading) {
+            submitBtn.disabled = loading;
+            submitBtn.textContent = loading
+                ? (isLogin ? '登录中...' : '注册中...')
+                : (isLogin ? '登录' : '注册');
+        }
+
+        toggleEl.addEventListener('click', () => {
+            isLogin = !isLogin;
+            titleEl.textContent = isLogin ? '登录' : '注册';
+            toggleEl.textContent = isLogin ? '没有账号？注册' : '已有账号？登录';
+            setLoading(false);
+            clearError();
+        });
+
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.textContent = type === 'password' ? '显示' : '隐藏';
+        });
+
+        async function submit() {
+            clearError();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            if (!validateEmail(email) || !password) {
+                showError('请输入有效的邮箱和密码');
+                return;
+            }
+
+            setLoading(true);
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+            try {
+                const response = await fetch(
+                    `/api/${isLogin ? 'login' : 'register'}`,
+                    {
+                        method: 'POST',
+                        mode: 'cors',
+                        credentials: 'include',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password }),
+                        signal: controller.signal
+                    }
+                );
+                clearTimeout(timeout);
+                const result = await response.json().catch(() => ({}));
+
+                if (response.ok) {
+                    if (isLogin) {
+                        localStorage.setItem('auth_token', result.token);
+                        document.cookie = `auth_token=${result.token}; Path=/; SameSite=Strict;`;
+                        window.location.href = 'choose_model.html';
+                    } else {
+                        alert('注册成功，请登录');
+                        toggleEl.click(); // 切换回登录界面
+                    }
+                } else {
+                    const msg = result.message || '请求失败，请重试';
+                    showError(msg);
+
+                    // 处理注册特殊错误提示
+                    if (!isLogin) {
+                        if (msg.includes('Duplicate')) {
+                            showError('该邮箱已注册，请直接登录');
+                        } else if (msg.includes('simple')) {
+                            showError('密码过于简单，请设置更复杂密码');
+                        }
+                    }
+                }
+            } catch (err) {
+                showError(err.name === 'AbortError' ? '请求超时，请重试' : '网络错误，请稍后重试');
+            } finally {
+                clearTimeout(timeout);
+                setLoading(false);
+            }
+        }
+
+        submitBtn.addEventListener('click', submit);
+        [emailInput, passwordInput].forEach(el =>
+            el.addEventListener('keydown', e => {
+                if (e.key === 'Enter') submit();
+            })
+        );
+    })();
+</script>
+</body>
+</html>

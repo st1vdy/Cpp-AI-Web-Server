@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>动漫风格迁移演示</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+<h1 class="text-2xl font-semibold mb-6">动漫风格迁移(Scenimefy)</h1>
+
+<div class="space-x-4 mb-6">
+  <input id="file-input" type="file" accept="image/*" class="hidden" />
+  <label for="file-input" class="px-4 py-2 bg-white border rounded cursor-pointer hover:bg-gray-100">
+    选择图片
+  </label>
+  <button id="upload-btn" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+    上传并转换
+  </button>
+  <button id="sample-btn" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+    示例演示
+  </button>
+</div>
+
+<p id="status" class="mb-4"></p>
+
+<div id="preview" class="flex space-x-8"></div>
+
+<script>
+  const fileInput = document.getElementById('file-input');
+  const uploadBtn = document.getElementById('upload-btn');
+  const sampleBtn = document.getElementById('sample-btn');
+  const statusEl = document.getElementById('status');
+  const previewEl = document.getElementById('preview');
+
+  function clearPreview() {
+    previewEl.innerHTML = '';
+  }
+
+  function showImages(srcUrl, resultUrl) {
+    clearPreview();
+    // 原图容器
+    const origDiv = document.createElement('div');
+    origDiv.className = 'flex flex-col items-center';
+    const img1 = document.createElement('img');
+    img1.src = srcUrl;
+    img1.alt = '原图';
+    img1.className = 'w-90 h-auto rounded shadow'; // 可调整 w-64 为 w-72, w-80 等
+    const cap1 = document.createElement('p');
+    cap1.textContent = '原图';
+    cap1.className = 'mt-2 text-sm text-gray-600';
+    origDiv.appendChild(img1);
+    origDiv.appendChild(cap1);
+
+    // 二次元风格图容器
+    const stylDiv = document.createElement('div');
+    stylDiv.className = 'flex flex-col items-center';
+    const img2 = document.createElement('img');
+    img2.src = resultUrl;
+    img2.alt = '二次元风格图';
+    img2.className = 'w-90 h-auto rounded shadow';
+    const cap2 = document.createElement('p');
+    cap2.textContent = '二次元风格图';
+    cap2.className = 'mt-2 text-sm text-gray-600';
+    stylDiv.appendChild(img2);
+    stylDiv.appendChild(cap2);
+
+    previewEl.appendChild(origDiv);
+    previewEl.appendChild(stylDiv);
+  }
+
+  async function processFile(file) {
+    statusEl.textContent = '处理中...';
+    const formData = new FormData();
+    formData.append('image', file);
+    try {
+      const res = await fetch('/api/style-transfer', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      showImages(URL.createObjectURL(file), data.stylizedImageUrl);
+    } catch (e) {
+      console.error(e);
+      alert('处理失败，请重试');
+    } finally {
+      statusEl.textContent = '';
+    }
+  }
+
+  uploadBtn.addEventListener('click', () => {
+    if (fileInput.files.length === 0) {
+      alert('请先选择一张图片');
+      return;
+    }
+    processFile(fileInput.files[0]);
+  });
+
+  sampleBtn.addEventListener('click', async () => {
+    statusEl.textContent = '加载示例...';
+    try {
+      const res = await fetch('/api/style-transfer/sample');
+      const data = await res.json();
+      showImages(data.originalSampleUrl, data.stylizedSampleUrl);
+    } catch (e) {
+      console.error(e);
+      alert('示例加载失败');
+    } finally {
+      statusEl.textContent = '';
+    }
+  });
+
+  fileInput.addEventListener('change', () => {
+    clearPreview();
+  });
+</script>
+</body>
+</html>
