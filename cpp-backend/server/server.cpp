@@ -73,7 +73,9 @@ void Server::register_router() {
     router_.register_route("POST", "/register", LoginController::register_handle);
     router_.register_route("POST", "/chat", LLMController::chat_handle);
     router_.register_route("POST", "/style-transfer", ScenimefyController::scenimefy_handle);
+    router_.register_route("POST", "/waifu/gen", WaifuController::generate_handler);
     router_.register_route("GET", "/style-transfer/sample", ScenimefyController::sample_handle);
+    router_.register_route("GET", "/waifu/rd", WaifuController::random_prompts_handler);
     router_.register_route("GET", "/check_auth", LoginController::check_auth_token);
 }
 

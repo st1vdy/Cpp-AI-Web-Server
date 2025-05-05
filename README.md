@@ -1,6 +1,6 @@
 # Cpp-AI-Web-Server
 
-这是一个多功能AI平台，集成了 DeepSeek、SceniMeFy 等多款先进的 AI 模型。
+这是一个多功能AI平台，集成了 DeepSeek、SceniMeFy、Waifu Diffusion 等多款先进的 AI 模型。
 
 demo：http://101.37.26.211:8000/
 

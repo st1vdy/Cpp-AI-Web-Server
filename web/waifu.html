@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Waifu Diffusion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+<!-- 标题 -->
+<h1 class="text-2xl font-semibold mb-6">Waifu Diffusion</h1>
+
+<!-- 操作区：多行输入框、按钮 -->
+<div class="space-x-4 mb-6 flex items-start">
+    <textarea
+            id="prompt-input"
+            rows="4"
+            placeholder="输入提示词..."
+            class="w-96 h-32 px-3 py-2 border rounded focus:outline-none focus:ring focus:border-blue-300 resize-none"
+    ></textarea>
+    <div class="flex flex-col space-y-2">
+        <button
+                id="random-btn"
+                class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        >
+            随机提示
+        </button>
+        <button
+                id="generate-btn"
+                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+            生成图像
+        </button>
+    </div>
+</div>
+
+<!-- 状态提示 -->
+<p id="status" class="mb-4 text-gray-600"></p>
+
+<!-- 生成结果展示区 -->
+<div id="output" class="flex justify-center mb-8"></div>
+
+<!-- 模型说明区 -->
+<div id="info" class="max-w-xl bg-white p-6 rounded shadow" style="text-align: justify;">
+    <h2 class="text-xl font-medium mb-4">模型说明</h2>
+    <p class="text-gray-700 leading-relaxed">
+        Waifu Diffusion 使用大量动漫插画作为训练集，能够生成符合典型二次元审美的角色立绘和场景。若不知道如何下手，可以点击“随机提示”获得灵感。
+    </p>
+    <ul class="list-disc list-inside mt-3 text-gray-700">
+        <li>目前只支持 <b>英语</b> 提示词！！！</li>
+        <li>每次生成都会返回一张 512×512 分辨率的图像。</li>
+        <li>请确保提示词简洁，包含关键视觉元素且尽量详细。</li>
+        <li>推荐预设：masterpiece, best quality, anime style, 1girl, school uniform, long hair, silver hair, red eyes, white stocking, school background</li>
+    </ul>
+</div>
+
+<script>
+    const promptInput = document.getElementById('prompt-input');
+    const randomBtn = document.getElementById('random-btn');
+    const generateBtn = document.getElementById('generate-btn');
+    const statusEl = document.getElementById('status');
+    const outputEl = document.getElementById('output');
+
+    function clearOutput() {
+        outputEl.innerHTML = '';
+    }
+
+    function showImage(imgUrl) {
+        clearOutput();
+        const img = document.createElement('img');
+        img.src = imgUrl;
+        img.alt = '生成图像';
+        img.className = 'w-80 h-auto rounded shadow';
+        outputEl.appendChild(img);
+    }
+
+    // 请求随机提示
+    randomBtn.addEventListener('click', async () => {
+        statusEl.textContent = '获取随机提示中...';
+        try {
+            const res = await fetch('/api/waifu/rd');
+            const data = await res.json();
+            promptInput.value = data.prompt;
+        } catch (e) {
+            console.error(e);
+            alert('获取随机提示失败');
+        } finally {
+            statusEl.textContent = '';
+        }
+    });
+
+    // 文生图生成
+    generateBtn.addEventListener('click', async () => {
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+            alert('请先输入提示词');
+            return;
+        }
+        statusEl.textContent = '生成中，请稍候...';
+        try {
+            const res = await fetch('/api/waifu/gen', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt }),
+            });
+            const data = await res.json();
+            showImage(data.imageUrl);
+        } catch (e) {
+            console.error(e);
+            alert('生成失败，请重试');
+        } finally {
+            statusEl.textContent = '';
+        }
+    });
+</script>
+</body>
+</html>

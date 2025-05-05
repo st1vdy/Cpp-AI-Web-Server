@@ -24,6 +24,7 @@
 #include "../control/login_controller.hpp"
 #include "../control/llm_controller.hpp"
 #include "../control/scenimefy_controller.hpp"
+#include "../control/waifu_controller.hpp"
 #include "epoll.hpp"
 #include "acceptor.hpp"
 #include "router.hpp"

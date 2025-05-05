@@ -58,7 +58,6 @@ inline std::pair<std::string, std::string> parse_multipart_file(const std::strin
 
 class ScenimefyController {
 public:
-    using json = nlohmann::json;
     static HttpResponse sample_handle(const HttpRequest& req) {
         HttpResponse response;
         try {

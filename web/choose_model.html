@@ -23,6 +23,7 @@
     const models = [
         { name: 'DeepSeek-R1-Distill-Qwen-14B', description: '高性能大语言模型，擅长复杂的任务，如数学推理、代码生成, 可处理复杂任务，如长文本生成、数据分析等' },
         { name: 'Scenimefy', description: 'Scenimefy是一种半监督图像到图像翻译框架，将真实场景高质量地渲染成保留语义且细节丰富的动漫风格图像' },
+        { name: 'Waifu Diffusion v1.4', description: 'Waifu Diffusion是在 Stable Diffusion 基础上，针对二次元风格进行大规模微调的开源图像生成模型' },
         { name: 'TODO', description: '...' }
         // 在此添加更多模型对象
     ];
@@ -64,6 +65,8 @@
             url = '/llm.html';
         } else if (name === 'Scenimefy') {
             url = '/scenimefy.html';
+        } else if (name === 'Waifu Diffusion v1.4') {
+            url = '/waifu.html'
         } else {
             console.warn('未定义模型跳转:', name);
             return;

@@ -1,0 +1,1 @@
+/usr/local/gcc-15.1/bin/g++ -rdynamic CMakeFiles/server.dir/main.cpp.o CMakeFiles/server.dir/server/server.cpp.o CMakeFiles/server.dir/http/http_session.cpp.o -o server  /usr/lib/x86_64-linux-gnu/libcurl.so 
